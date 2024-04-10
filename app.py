@@ -1,5 +1,6 @@
 import json
 import csv
+import os  # Ajoutez cette importation en haut de votre fichier
 
 from flask import request
 from flask import jsonify
@@ -21,7 +22,9 @@ ADMIN=False # Faut etre ADMIN/mongo pour ecrire dans la base
 #client = MongoClient("mongodb+srv://menez:monpassadminQ@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
 #client = MongoClient("mongodb+srv://logincfsujet:pwdcfsujet@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
 #client = MongoClient("mongodb+srv://visitor:doliprane@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
-client = MongoClient("mongodb+srv://SerigneRawaneDIOP:" + mongoDBPassword + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+# Supposons que votre variable d'environnement s'appelle "MotDePasseMongoDB"
+mot_de_passe_mongo = os.getenv('MotDePasseMongoDB')  # Utilisez os.getenv pour récupérer la valeur
+client = MongoClient("mongodb+srv://SerigneRawaneDIOP:" + mot_de_passe_mongo + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 #-----------------------------------------------------------------------------
 # Looking for "WaterBnB" database in the cluster
