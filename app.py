@@ -20,7 +20,8 @@ from pymongo import MongoClient
 ADMIN=False # Faut etre ADMIN/mongo pour ecrire dans la base
 #client = MongoClient("mongodb+srv://menez:monpassadminQ@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
 #client = MongoClient("mongodb+srv://logincfsujet:pwdcfsujet@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
-client = MongoClient("mongodb+srv://visitor:doliprane@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
+#client = MongoClient("mongodb+srv://visitor:doliprane@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
+client = MongoClient("mongodb+srv://SerigneRawaneDIOP:" + mongoDBPassword + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 #-----------------------------------------------------------------------------
 # Looking for "WaterBnB" database in the cluster
