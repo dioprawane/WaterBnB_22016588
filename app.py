@@ -1,7 +1,8 @@
 import json
+from jsonschema import validate
 import csv
 import os  # Ajoutez cette importation en haut de votre fichier
-
+import utility
 from flask import request
 from flask import jsonify
 from flask import Flask
@@ -24,7 +25,8 @@ ADMIN=True # Faut etre ADMIN/mongo pour ecrire dans la base
 #client = MongoClient("mongodb+srv://visitor:doliprane@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
 
 mot_de_passe_mongo = os.getenv('MotDePasseMongoDB')  # Utilisez os.getenv pour récupérer la valeur
-client = MongoClient("mongodb+srv://SerigneRawaneDIOP:" + mot_de_passe_mongo + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+client = MongoClient("mongodb+srv://borreani_iot:" + mot_de_passe_mongo + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+#client = MongoClient("mongodb+srv://borreani_iot:" + "" + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 #-----------------------------------------------------------------------------
 # Looking for "WaterBnB" database in the cluster
@@ -181,12 +183,17 @@ def handle_mqtt_message(client, userdata, msg):
     
     if (msg.topic == topicname) : # cf https://stackoverflow.com/questions/63580034/paho-updating-userdata-from-on-message-callback
         decoded_message =str(msg.payload.decode("utf-8"))
-        #print("\ndecoded message received = {}".format(decoded_message))
-        dic =json.loads(decoded_message) # from string to dict
-        print("\n Dictionnary  received = {}".format(dic))
+        # first step check if the message is a json
+        if(utility.is_json(decoded_message)):
+            # second step check if the json message is valid with use the JSON schema
+            if(utility.validate_json(decoded_message)):
+                dic =json.loads(decoded_message) # from string to dict
+                print("\n Dictionnary  received = {}".format(dic))
 
-        who = dic["info"]["ident"] # Qui a publié ?
-        t = dic["status"]["temperature"] # Quelle température ?
+                who = dic["info"]["ident"] # Qui a publié ?
+                t = dic["status"]["temperature"] # Quelle température ?
+        
+        
 
 
 #%%%%%%%%%%%%%  main driver function
