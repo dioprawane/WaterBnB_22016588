@@ -118,7 +118,9 @@ def openthedoor():
         granted = "YES"
     else:
         granted = "NO"
-    return  jsonify({'idu' : session['idu'], 'idswp' : session['idswp'], "granted" : granted}), 200
+    #return  jsonify({'idu' : session['idu'], 'idswp' : session['idswp'], "granted" : granted}), 200
+    # Utilisez render_template pour envoyer les données à index.html
+    return render_template('index.html', idu=session['idu'], idswp=session['idswp'], granted=granted)
 
 # Test with => curl -X POST https://waterbnbf.onrender.com/open?who=gillou
 # Test with => curl https://waterbnbf.onrender.com/open?who=gillou
