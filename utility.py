@@ -1,6 +1,9 @@
 import json
 from jsonschema import validate
 import os
+from flask import Flask
+from pymongo import MongoClient
+from pymongo.errors import ServerSelectionTimeoutError
 
 def is_json(message):
     try:
@@ -20,3 +23,11 @@ def validate_json(json_data):
     except Exception as e:
         print(f"Validation error: {e}")
         return False
+    
+def ping_mongodb(client):
+    try:
+        # Try to connect to the MongoDB server
+        print(client)
+        return "MongoDB is reachable."
+    except ServerSelectionTimeoutError:
+        return "Failed to connect to MongoDB."
