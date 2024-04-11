@@ -171,28 +171,29 @@ def handle_connect(client, userdata, flags, rc):
 
 @mqtt_client.on_message()
 def handle_mqtt_message(client, userdata, msg):
-    debug = true
     global topicname
     
+    debug = False
+
     data = dict(
         topic=msg.topic,
         payload=msg.payload.decode()
     )
     #    print('Received message on topic: {topic} with payload: {payload}'.format(**data))
-    print("\n msg.topic = {}".format(msg.topic))
-    print("\n topicname = {}".format(topicname))
+    print("\n msg.topic = {}".format(msg.topic)) if debug else None
+    print("\n topicname = {}".format(topicname)) if debug else None
     
     if (msg.topic == topicname) : # cf https://stackoverflow.com/questions/63580034/paho-updating-userdata-from-on-message-callback
         decoded_message =str(msg.payload.decode("utf-8"))
-        print("\x1b[32m"+decoded_message+"\x1b[30m")
+        print("\x1b[32m"+decoded_message+"\x1b[30m") if debug else None
         # first step check if the message is a json
         if(utility.is_json(decoded_message) and decoded_message != "" and decoded_message != "{}"):
-            print("\x1b[31m"+decoded_message+"\x1b[30m")
+            print("\x1b[31m"+decoded_message+"\x1b[30m")  if debug else None
             # second step check if the json message is valid with use the JSON schema
             if(utility.validate_json(decoded_message)):
 
                 dic =json.loads(decoded_message) # from string to dict
-                print("\n Dictionnary  received = {}".format(dic))
+                print("\n Dictionnary  received = {}".format(dic)) if debug else None
                 utility.ping_mongodb(client)
                 who = dic["info"]["ident"] # Qui a publié ?
                 t = dic["status"]["temperature"] # Quelle température ?
