@@ -178,7 +178,7 @@ def handle_connect(client, userdata, flags, rc):
 def handle_mqtt_message(client, userdata, msg):
     global topicname
     nbrValueMax = 1000 # max number of values in the tab_requests
-    debug = False  # True for debug mode, if you want to see all the messages
+    debug = True  # True for debug mode, if you want to see all the messages
 
     data = dict(
         topic=msg.topic,
@@ -195,7 +195,7 @@ def handle_mqtt_message(client, userdata, msg):
         if(utility.is_json(decoded_message) and decoded_message != "" and decoded_message != "{}"):
             print("\x1b[31m"+decoded_message+"\x1b[30m")  if debug else None
             # second step check if the json message is valid with use the JSON schema
-            if(utility.validate_json(decoded_message)):
+            if(utility.validate_json(decoded_message, debug)):
                 dic =json.loads(decoded_message) # from string to dict
                 print("\n Dictionnary  received = {}".format(dic)) if debug else None
                 print(piscinescollection.find_one()) if debug else None
@@ -212,7 +212,6 @@ def handle_mqtt_message(client, userdata, msg):
                         "piscine":dic["piscine"]
                     }
                     piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
-                    print("ok")
                 else:
                     piscinescollection.insert_one({
                         "nbr_request":0,
@@ -228,7 +227,6 @@ def handle_mqtt_message(client, userdata, msg):
                                 "piscine":dic["piscine"] 
                             }]
                         })
-                    print("not ok")
 
 
 
