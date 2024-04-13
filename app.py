@@ -179,7 +179,7 @@ def handle_mqtt_message(client, userdata, msg):
     global topicname
     nbrValueMax = 1000 # max number of values in the tab_requests
     debug = True  # True for debug mode, if you want to see all the messages
-
+    nowDate = datetime.today().replace(microsecond=0)
     data = dict(
         topic=msg.topic,
         payload=msg.payload.decode()
@@ -193,25 +193,26 @@ def handle_mqtt_message(client, userdata, msg):
         print("\x1b[32m"+decoded_message+"\x1b[30m") if debug else None
         # first step check if the message is a json
         if(utility.is_json(decoded_message) and decoded_message != "" and decoded_message != "{}"):
+            dic = json.loads(decoded_message) # from string to dict
             print("\x1b[31m"+decoded_message+"\x1b[30m")  if debug else None
             # second step check if the json message is valid with use the JSON schema
-            if(utility.validate_json(decoded_message, debug)):
-                dic =json.loads(decoded_message) # from string to dict
+            if(utility.validate_json(dic, debug)):
                 print("\n Dictionnary  received = {}".format(dic)) if debug else None
-                print(piscinescollection.find_one()) if debug else None
                 ident = dic["info"]["ident"] # Qui a publié ?
                 data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
+                # if the data already exist, we update the tab_requests
                 if(data != None ):
+                    # check if the number of requests is not too, big else pop all the oldest requests
                     while (len(data["tab_requests"]) > nbrValueMax):
                         data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
-                        print(len(data["tab_requests"]))
                         piscinescollection.update_one({"info.ident": ident}, {"$pop": {"tab_requests": -1}})
                     nouvelle_valeur =  { 
-                        "date":datetime.today().replace(microsecond=0),
+                        "date":nowDate,
                         "statuts":dic["status"],
                         "piscine":dic["piscine"]
                     }
                     piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
+                # else we create a new data
                 else:
                     piscinescollection.insert_one({
                         "nbr_request":0,
@@ -222,7 +223,7 @@ def handle_mqtt_message(client, userdata, msg):
                         "reporthost":dic["reporthost"],
                         "tab_requests":[
                             {
-                                "date":datetime.today().replace(microsecond=0),
+                                "date":nowDate,
                                 "statuts":dic["status"],
                                 "piscine":dic["piscine"] 
                             }]

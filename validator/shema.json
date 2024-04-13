@@ -20,7 +20,7 @@
         "location": {
             "type": "object",
             "properties": {
-                "room":{"type":"integer"},
+                "room":{"type":"string"},
                 "gps": {
                     "type": "object",
                     "properties": {
@@ -39,12 +39,9 @@
             "type": "object",
             "properties": {
                 "lt":{"type": "integer"},
-                "ht":{"type": "integer"},
-                "lumiereAlerte":{"type": "integer"},
-                "temperatureAlerte":{"type": "integer"},
-                "pourcentageAvantAlerte":{"type": "integer"}
+                "ht":{"type": "integer"}
             },
-            "required": [ "lt", "ht", "lumiereAlerte", "temperatureAlerte", "pourcentageAvantAlerte" ],
+            "required": [ "lt", "ht" ],
             "additionalProperties": false
         },
         "info": {
@@ -83,9 +80,9 @@
             "type": "object",
             "properties": {
                 "hotspot":{"type": "boolean"},
-                "occupied":{"type": "boolean"}
+                "occuped":{"type": "boolean"}
             },
-            "required": ["hotspot","occupied"],
+            "required": ["hotspot","occuped"],
             "additionalProperties": false
         }
     },
