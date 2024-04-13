@@ -8,6 +8,7 @@ from flask import jsonify
 from flask import Flask
 from flask import session
 from flask import render_template
+from datetime import datetime
 #https://python-adv-web-apps.readthedocs.io/en/latest/flask.html
 
 #https://www.emqx.com/en/blog/how-to-use-mqtt-in-flask
@@ -28,6 +29,8 @@ mot_de_passe_mongo = os.getenv('MotDePasseMongoDB')  # Utilisez os.getenv pour r
 #client = MongoClient("mongodb+srv://borreani_iot:" + mot_de_passe_mongo + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 client = MongoClient("mongodb+srv://borreani_iot:" + "SuperTheo83" + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
+
+
 #-----------------------------------------------------------------------------
 # Looking for "WaterBnB" database in the cluster
 #https://stackoverflow.com/questions/32438661/check-database-exists-in-mongodb-using-pymongo
@@ -35,6 +38,7 @@ dbname= 'WaterBnB'
 dbnames = client.list_database_names()
 if dbname in dbnames: 
     print(f"{dbname} is there!")
+
 else:
     print("YOU HAVE to CREATE the db !\n")
 
@@ -50,6 +54,7 @@ else:
     print(f"YOU HAVE to CREATE the {collname} collection !\n")
     
 userscollection = db.users
+piscinescollection = db.piscines
 
 #-----------------------------------------------------------------------------
 # import authorized users .. if not already in ?
@@ -172,8 +177,8 @@ def handle_connect(client, userdata, flags, rc):
 @mqtt_client.on_message()
 def handle_mqtt_message(client, userdata, msg):
     global topicname
-    
-    debug = False
+    nbrValueMax = 1000 # max number of values in the tab_requests
+    debug = False  # True for debug mode, if you want to see all the messages
 
     data = dict(
         topic=msg.topic,
@@ -191,12 +196,40 @@ def handle_mqtt_message(client, userdata, msg):
             print("\x1b[31m"+decoded_message+"\x1b[30m")  if debug else None
             # second step check if the json message is valid with use the JSON schema
             if(utility.validate_json(decoded_message)):
-
                 dic =json.loads(decoded_message) # from string to dict
                 print("\n Dictionnary  received = {}".format(dic)) if debug else None
-                utility.ping_mongodb(client)
-                who = dic["info"]["ident"] # Qui a publié ?
-                t = dic["status"]["temperature"] # Quelle température ?
+                print(piscinescollection.find_one()) if debug else None
+                ident = dic["info"]["ident"] # Qui a publié ?
+                data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
+                if(data != None ):
+                    while (len(data["tab_requests"]) > nbrValueMax):
+                        data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
+                        print(len(data["tab_requests"]))
+                        piscinescollection.update_one({"info.ident": ident}, {"$pop": {"tab_requests": -1}})
+                    nouvelle_valeur =  { 
+                        "date":datetime.today().replace(microsecond=0),
+                        "statuts":dic["status"],
+                        "piscine":dic["piscine"]
+                    }
+                    piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
+                    print("ok")
+                else:
+                    piscinescollection.insert_one({
+                        "nbr_request":0,
+                        "info":dic["info"],
+                        "location":float(dic["location"]),
+                        "regul":dic["regul"],
+                        "net":dic["net"],
+                        "reporthost":dic["reporthost"],
+                        "tab_requests":[
+                            {
+                                "date":datetime.today().replace(microsecond=0),
+                                "statuts":dic["status"],
+                                "piscine":dic["piscine"] 
+                            }]
+                        })
+                    print("not ok")
+
 
 
         

@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../miage_iot_and_network/validator"
+		}
+	],
+	"settings": {
+		"liveServer.settings.port": 5502
+	}
+}

@@ -26,8 +26,8 @@ def validate_json(json_data):
     
 def ping_mongodb(client):
     try:
+        
         # Try to connect to the MongoDB server
-        print(client)
         return "MongoDB is reachable."
     except ServerSelectionTimeoutError:
         return "Failed to connect to MongoDB."
