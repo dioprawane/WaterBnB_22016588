@@ -261,7 +261,7 @@ def handle_mqtt_message(client, userdata, msg):
                 dic =json.loads(decoded_message) # from string to dict
                 with open("etat_piscine.txt", "w") as f:
                 # Ici, le bloc de code est correctement indenté
-                f.write("1" if dic.get("piscine", {}).get("occuped", False) else "0")
+                    f.write("1" if dic.get("piscine", {}).get("occuped", False) else "0")
                 print("\n Dictionnary  received = {}".format(dic))
 
                 who = dic["info"]["ident"] # Qui a publié ?
