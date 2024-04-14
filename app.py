@@ -1,4 +1,5 @@
 import json
+from jsonschema import validate
 import csv
 import os  # Ajoutez cette importation en haut de votre fichier
 import utility
@@ -9,6 +10,7 @@ from flask import jsonify
 from flask import Flask
 from flask import session
 from flask import render_template
+from datetime import datetime
 #https://python-adv-web-apps.readthedocs.io/en/latest/flask.html
 
 #https://www.emqx.com/en/blog/how-to-use-mqtt-in-flask
@@ -26,7 +28,10 @@ ADMIN=True # Faut etre ADMIN/mongo pour ecrire dans la base
 #client = MongoClient("mongodb+srv://visitor:doliprane@cluster0.x0zyf.mongodb.net/?retryWrites=true&w=majority")
 
 mot_de_passe_mongo = os.getenv('MotDePasseMongoDB')  # Utilisez os.getenv pour récupérer la valeur
-client = MongoClient("mongodb+srv://SerigneRawaneDIOP:" + mot_de_passe_mongo + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+#client = MongoClient("mongodb+srv://borreani_iot:" + mot_de_passe_mongo + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+client = MongoClient("mongodb+srv://borreani_iot:" + "SuperTheo83" + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+
+
 
 #-----------------------------------------------------------------------------
 # Looking for "WaterBnB" database in the cluster
@@ -35,6 +40,7 @@ dbname= 'WaterBnB'
 dbnames = client.list_database_names()
 if dbname in dbnames: 
     print(f"{dbname} is there!")
+
 else:
     print("YOU HAVE to CREATE the db !\n")
 
@@ -50,6 +56,7 @@ else:
     print(f"YOU HAVE to CREATE the {collname} collection !\n")
     
 userscollection = db.users
+piscinescollection = db.piscines
 
 #-----------------------------------------------------------------------------
 # import authorized users .. if not already in ?
@@ -243,29 +250,57 @@ def handle_connect(client, userdata, flags, rc):
 @mqtt_client.on_message()
 def handle_mqtt_message(client, userdata, msg):
     global topicname
-    
+    nbrValueMax = 1000 # max number of values in the tab_requests
+    debug = True  # True for debug mode, if you want to see all the messages
+    nowDate = datetime.today().replace(microsecond=0)
     data = dict(
         topic=msg.topic,
         payload=msg.payload.decode()
     )
     #    print('Received message on topic: {topic} with payload: {payload}'.format(**data))
-    print("\n msg.topic = {}".format(msg.topic))
-    print("\n topicname = {}".format(topicname))
+    print("\n msg.topic = {}".format(msg.topic)) if debug else None
+    print("\n topicname = {}".format(topicname)) if debug else None
     
     if (msg.topic == topicname) : # cf https://stackoverflow.com/questions/63580034/paho-updating-userdata-from-on-message-callback
         decoded_message =str(msg.payload.decode("utf-8"))
+        print("\x1b[32m"+decoded_message+"\x1b[30m") if debug else None
         # first step check if the message is a json
-        if(utility.is_json(decoded_message)):
+        if(utility.is_json(decoded_message) and decoded_message != "" and decoded_message != "{}"):
+            dic = json.loads(decoded_message) # from string to dict
+            print("\x1b[31m"+decoded_message+"\x1b[30m")  if debug else None
             # second step check if the json message is valid with use the JSON schema
-            if(utility.validate_json(decoded_message)):
-                dic =json.loads(decoded_message) # from string to dict
-                with open("etat_piscine.txt", "w") as f:
-                # Ici, le bloc de code est correctement indenté
-                    f.write("1" if dic.get("piscine", {}).get("occuped", False) else "0")
-                print("\n Dictionnary  received = {}".format(dic))
-
-                who = dic["info"]["ident"] # Qui a publié ?
-                t = dic["status"]["temperature"] # Quelle température ?
+            if(utility.validate_json(dic, debug)):
+                print("\n Dictionnary  received = {}".format(dic)) if debug else None
+                ident = dic["info"]["ident"] # Qui a publié ?
+                data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
+                # if the data already exist, we update the tab_requests
+                if(data != None ):
+                    # check if the number of requests is not too, big else pop all the oldest requests
+                    while (len(data["tab_requests"]) > nbrValueMax):
+                        data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
+                        piscinescollection.update_one({"info.ident": ident}, {"$pop": {"tab_requests": -1}})
+                    nouvelle_valeur =  { 
+                        "date":nowDate,
+                        "statuts":dic["status"],
+                        "piscine":dic["piscine"]
+                    }
+                    piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
+                # else we create a new data
+                else:
+                    piscinescollection.insert_one({
+                        "nbr_request":0,
+                        "info":dic["info"],
+                        "location":float(dic["location"]),
+                        "regul":dic["regul"],
+                        "net":dic["net"],
+                        "reporthost":dic["reporthost"],
+                        "tab_requests":[
+                            {
+                                "date":nowDate,
+                                "statuts":dic["status"],
+                                "piscine":dic["piscine"] 
+                            }]
+                        })
 
 
 #%%%%%%%%%%%%%  main driver function

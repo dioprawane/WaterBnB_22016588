@@ -7,8 +7,6 @@
             "type": "object",
             "properties": {
                 "temperature":{"type":"number"},
-                "temperatureMax":{"type":"number"},
-                "temperatureMin":{"type":"number"},
                 "light":{"type":"integer"},
                 "regul":{"type":"string", "enum": ["WALK", "HALT"]},
                 "fire":{"type":"boolean"},
@@ -22,41 +20,38 @@
         "location": {
             "type": "object",
             "properties": {
-                "room":{"type":"integer"},
+                "room":{"type":"string"},
                 "gps": {
                     "type": "object",
                     "properties": {
-                        "lat":{"type": "number"},                        
-                        "lon":{"type": "number"}
+                        "lat":{"type": "string"},                        
+                        "lon":{"type": "string"}
                     },
-                    "required": [],
+                    "required": ["lat","lon"],
                     "additionalProperties": false
                 },
                 "address":{"type": "string"}
             },
-            "required": [],
+            "required": ["room","gps","address"],
             "additionalProperties": false
         },
         "regul": {
             "type": "object",
             "properties": {
                 "lt":{"type": "integer"},
-                "ht":{"type": "integer"},
-                "lumiereAlerte":{"type": "integer"},
-                "temperatureAlerte":{"type": "integer"},
-                "pourcentageAvantAlerte":{"type": "integer"}
+                "ht":{"type": "integer"}
             },
-            "required": [],
+            "required": [ "lt", "ht" ],
             "additionalProperties": false
         },
-        "information": {
+        "info": {
             "type": "object",
             "properties": {
                 "ident":{"type": "string"},
                 "user":{"type": "string"},
                 "loc":{"type": "string"}
             },
-            "required": [],
+            "required": ["ident","user","loc"],
             "additionalProperties": false
         },
         "net": {
@@ -67,7 +62,7 @@
                 "mac":{"type": "string"},
                 "ip":{"type": "string"}
             },
-            "required": [],
+            "required": ["uptime","ssid","mac","ip"],
             "additionalProperties": false
         },
         "reporthost": {
@@ -78,21 +73,19 @@
                 "sp":{"type": "integer"}
 
             },
-            "required": [],
+            "required": ["target_ip","target_port","sp"],
             "additionalProperties": false
         },
         "piscine":{
             "type": "object",
             "properties": {
                 "hotspot":{"type": "boolean"},
-                "occupied":{"type": "boolean"}
+                "occuped":{"type": "boolean"}
             },
-            "required": [],
+            "required": ["hotspot","occuped"],
             "additionalProperties": false
         }
     },
-    "required": [],
+    "required": ["status","location","regul","info","net","reporthost","piscine"],
     "additionalProperties": false
 }
-
-
