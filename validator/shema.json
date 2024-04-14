@@ -89,5 +89,3 @@
     "required": ["status","location","regul","info","net","reporthost","piscine"],
     "additionalProperties": false
 }
-
-
