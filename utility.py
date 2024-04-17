@@ -39,4 +39,3 @@ def ping_mongodb(client):
         return "MongoDB is reachable."
     except ServerSelectionTimeoutError:
         return "Failed to connect to MongoDB."
-
