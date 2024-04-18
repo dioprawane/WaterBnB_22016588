@@ -120,43 +120,6 @@ def client():
     return '<h1> Your IP address is:' + ip_addr
 """
 
-# Envoie etat de la piscine vers l'ESP
-# def envoyer_etat_piscine(etat):
-#     """
-#     Envoie l'état de la piscine à l'ESP via MQTT.
-#     'etat' peut être 0 (disponible), 1 (occupée) ou 2 (accès refusé).
-#     """
-#     sujet = "uca/iot/piscine/etat22016588"  # Assurez-vous que ce sujet correspond à celui attendu par votre ESP
-#     message = json.dumps({"etatPiscine": etat})
-#     resultat = mqtt_client.publish(sujet, message)
-#     print(f"Envoi MQTT {sujet} avec le message {message}, résultat: {resultat}")
-
-
-
-#https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
-#If a request goes through multiple proxies, the IP addresses of each successive proxy is listed.
-# voir aussi le parsing !
-
-# @app.route("/open", methods= ['GET', 'POST'])
-# # @app.route('/open') # ou en GET seulement
-# def openthedoor():
-#     idu = request.args.get('idu') # idu : clientid of the service
-#     idswp = request.args.get('idswp')  #idswp : id of the swimming pool
-#     session['idu'] = idu
-#     session['idswp'] = idswp
-#     print("\n Peer = {}".format(idu))
-
-#     # ip addresses of the machine asking for opening
-#     ip_addr = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
-
-#     if userscollection.find_one({"name" : idu}) !=  None:
-#         granted = "YES"
-#     else:
-#         granted = "NO"
-#     #return  jsonify({'idu' : session['idu'], 'idswp' : session['idswp'], "granted" : granted}), 200
-#     # Utilisez render_template pour envoyer les données à index.html
-#     return render_template('index.html', idu=session['idu'], idswp=session['idswp'], granted=granted)
-
 @app.route("/users")
 def lists_users(): # Liste des utilisateurs déclarés
     """
@@ -186,27 +149,6 @@ def handle_connect(client, userdata, flags, rc):
    else:
        print('Bad connection. Code:', rc)
 
-
-# @mqtt_client.on_message()
-# def handle_mqtt_message(client, userdata, msg):
-#     global topicname
-    
-#     data = dict(
-#         topic=msg.topic,
-#         payload=msg.payload.decode()
-#     )
-#     #    print('Received message on topic: {topic} with payload: {payload}'.format(**data))
-#     print("\n msg.topic = {}".format(msg.topic))
-#     print("\n topicname = {}".format(topicname))
-    
-#     if (msg.topic == topicname) : # cf https://stackoverflow.com/questions/63580034/paho-updating-userdata-from-on-message-callback
-#         decoded_message =str(msg.payload.decode("utf-8"))
-#         #print("\ndecoded message received = {}".format(decoded_message))
-#         dic =json.loads(decoded_message) # from string to dict
-#         print("\n Dictionnary  received = {}".format(dic))
-
-#         who = dic["info"]["ident"] # Qui a publié ?
-#         t = dic["status"]["temperature"] # Quelle température ?
 
 @mqtt_client.on_message()
 def handle_mqtt_message(client, userdata, msg):
@@ -281,78 +223,21 @@ def process_piscine_status(data):
         # Assume additional processing here
         print("Processing Piscine State: {}".format(etat))
 
-# Supposons que cette variable est définie quelque part dans votre application
-# 0 = disponible, 1 = occupée
-# Supposons que cette variable est définie quelque part au niveau global de votre application
-# 0 = disponible, 1 = occupée
 @app.route("/open", methods=['GET', 'POST'])
 def openthedoor():
     idu = request.args.get('idu')
     idswp = request.args.get('idswp')
     user = userscollection.find_one({"name": idu})
     
-    if user and user.get('etatPiscine', 0) == 0:
+    if user and user.get('etatPiscine', 1) == 1:
         mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 0}))
         return render_template('index.html', idu=idu, idswp=idswp, granted="YES")
     else:
         mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 2}))
         return render_template('index.html', idu=idu, idswp=idswp, granted="NO")
-    # idu = request.args.get('idu')
-    # idswp = request.args.get('idswp')
-    # session['idu'] = idu
-    # session['idswp'] = idswp
-
-    # user = userscollection.find_one({"name": idu})
-    # if user and user.get('etatPiscine', 0) == 0:
-    #     mqtt_client.publish('uca/iot/piscine/etat22016588', json.dumps({"etatPiscine": 1}))
-    #     return render_template('index.html', idu=session['idu'], idswp=session['idswp'], granted="YES")
-    #     #return jsonify({'idu': idu, 'idswp': idswp, "granted": "YES"}), 200
-    # else:
-    #     mqtt_client.publish('uca/iot/piscine/etat22016588', json.dumps({"etatPiscine": 2}))
-    #     return render_template('index.html', idu=session['idu'], idswp=session['idswp'], granted="NO")
-        #return jsonify({'idu': idu, 'idswp': idswp, "granted": "NO"}), 200
-    
-    #utilisateur_autorise = userscollection.find_one({"name": idu}) is not None
-    
-    """ try:
-        with open('etat_piscine.txt', 'r') as f:
-            # Assurez-vous que le bloc suivant est correctement indenté
-            etatPiscine = int(f.read().strip())
-    except FileNotFoundError:
-        etatPiscine = 0  # Assumer la piscine disponible si le fichier n'existe pas
-
-    piscine_disponible = etatPiscine == 0
-
-    if utilisateur_autorise and piscine_disponible:
-        granted = "YES"
-        envoyer_etat_piscine(1)
-    else:
-        granted = "NO"
-        envoyer_etat_piscine(2)
-
-    return render_template('index.html', idu=session['idu'], idswp=session['idswp'], granted=granted) """
-
-
-
-
 
 # Test with => curl -X POST https://waterbnbf.onrender.com/open?who=gillou
 # Test with => curl https://waterbnbf.onrender.com/open?who=gillou
-
-#@app.route('/publish', methods=['POST'])
-# def publish_message():
-#     """
-#     mosquitto_sub -h test.mosquitto.org -t gillou
-#     mosquitto_pub -h test.mosquitto.org -t gillou -m tutu
-#     curl -X POST -H Content-Type:application/json -d "{\"topic\":\"gillou\",\"msg\":\"hello\"}"  https://waterbnbf.onrender.com/publish
-#     """
-#     content_type = request.headers.get('Content-Type')
-#     print("\n Content type = {}".format(content_type))
-#     request_data = request.get_json()
-#     print("\n topic = {}".format(request_data['topic']))
-    
-#     publish_result = mqtt_client.publish(request_data['topic'], request_data['msg'])
-#     return jsonify({'code': publish_result[0]})
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
 
@@ -373,13 +258,6 @@ def publish_message():
     print("\n topic = {}".format(request_data['topic']))
     result = mqtt_client.publish(topic, json.dumps(message))
     return jsonify({'code': result.rc})
-    
-    #publish_result = mqtt_client.publish(request_data['topic'], request_data['msg'])
-
-    # result = mqtt_client.publish(topic, json.dumps(message))
-    # return jsonify({'code': result.rc})
-
-    #return jsonify({'code': publish_result[0]})
     
 
 
