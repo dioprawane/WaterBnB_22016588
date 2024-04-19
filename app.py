@@ -1,5 +1,5 @@
 import json
-from jsonschema import validate
+#from jsonschema import validate
 import csv
 import os  # Ajoutez cette importation en haut de votre fichier
 import utility
