@@ -2,3 +2,6 @@ Flask
 Gunicorn
 flask-mqtt
 flask-pymongo
+jsonschema==3.2.0
+
+
