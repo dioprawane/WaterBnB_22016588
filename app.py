@@ -190,16 +190,17 @@ def handle_mqtt_message(client, userdata, msg):
                 data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
                 # if the data already exist, we update the tab_requests
                 if(data != None ):
+                    print("data exist !!!") if debug else None
                     # check if the number of requests is not too, big else pop all the oldest requests
                     while (len(data["tab_requests"]) > nbrValueMax):
                         data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
                         piscinescollection.update_one({"info.ident": ident}, {"$pop": {"tab_requests": -1}})
-                        nouvelle_valeur =  { 
-                            "date":nowDate,
-                            "statuts":dic["status"],
-                            "piscine":dic["piscine"]
-                        }
-                        piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
+                    nouvelle_valeur =  { 
+                        "date":nowDate,
+                        "statuts":dic["status"],
+                        "piscine":dic["piscine"]
+                    }
+                    piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
                 # else we create a new data
                 else:
                     piscinescollection.insert_one({
