@@ -31,7 +31,7 @@ ADMIN=True # Faut etre ADMIN/mongo pour ecrire dans la base
 
 mot_de_passe_mongo = os.getenv('MotDePasseMongoDB')  # Utilisez os.getenv pour récupérer la valeur
 #client = MongoClient("mongodb+srv://borreani_iot:" + mot_de_passe_mongo + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-client = MongoClient("mongodb+srv://borreani_iot:" + "SuperTheo83" + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+client = MongoClient("mongodb+srv://borreani_iot:" + "exemplePassword" + "@cluster0.kcb93lq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 
 
@@ -201,6 +201,7 @@ def handle_mqtt_message(client, userdata, msg):
                         "piscine":dic["piscine"]
                     }
                     piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
+                    piscinescollection.update_one({"info.ident": ident}, {"$set": {"info": data["info"], "location": data["location"], "regul": data["regul"], "net": data["net"], "reporthost": data["reporthost"]}})
                 # else we create a new data
                 else:
                     piscinescollection.insert_one({
