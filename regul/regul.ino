@@ -104,10 +104,10 @@ struct Parametre{
   int sp = 10;
   //--------------Lieu------------------
   char* room = "312";
-  char* lat = "43.7102271";
-  char* lon = "7.2599507";
+  char* lat = "43.6979";
+  char* lon = "7.2798";
   char* address = "12 Boulevard Joseph Garnier";
-  char* identifiant = "P_22016588";
+  char* identifiant = "P_21904310";
   //--------------Mqtt------------------
   char* mqtt_server = "test.mosquitto.org"; 
   // topic

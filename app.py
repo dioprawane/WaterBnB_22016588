@@ -155,7 +155,7 @@ def handle_mqtt_message(client, userdata, msg):
     global topicname
     global topicname2
     nbrValueMax = 1000 # max number of values in the tab_requests
-    debug = True  # True for debug mode, if you want to see all the messages
+    debug = False  # True for debug mode, if you want to see all the messages
     nowDate = datetime.today().replace(microsecond=0)
 
     data = dict(
@@ -215,7 +215,8 @@ def handle_mqtt_message(client, userdata, msg):
                             "date": nowDate,
                             "statuts": dic["status"],
                             "piscine": dic["piscine"] 
-                        }]
+                        }],
+                        "tab_demandes": [],
                     })
 
                     
@@ -231,11 +232,26 @@ def openthedoor():
     idswp = request.args.get('idswp')
     user = userscollection.find_one({"name": idu})
     
+    print("\n idswp = {}".format(idswp))
+
+
     if user and user.get('etatPiscine', 1) == 1:
         mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 0}))
+        nouvelle_valeur =  { 
+                        "authorize":True,
+                        "date":datetime.today().replace(microsecond=0),
+                        "user":user,
+                    }
+        piscinescollection.update_one({"info.ident": idswp}, {"$push": {"tab_demandes": nouvelle_valeur}})
         return render_template('index.html', idu=idu, idswp=idswp, granted="YES")
     else:
         mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 2}))
+        nouvelle_valeur =  { 
+                        "authorize":False,
+                        "date":datetime.today().replace(microsecond=0),
+                        "user":user,
+                    }
+        piscinescollection.update_one({"info.ident": idswp}, {"$push": {"tab_demandes": nouvelle_valeur}})
         return render_template('index.html', idu=idu, idswp=idswp, granted="NO")
 
 # Test with => curl -X POST https://waterbnbf.onrender.com/open?who=gillou
