@@ -232,8 +232,6 @@ def openthedoor():
     idswp = request.args.get('idswp')
     user = userscollection.find_one({"name": idu})
     
-    print("\n idswp = {}".format(idswp))
-
 
     if user and user.get('etatPiscine', 1) == 1:
         mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 0}))
