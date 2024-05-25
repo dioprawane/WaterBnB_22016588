@@ -169,12 +169,12 @@ def handle_mqtt_message(client, userdata, msg):
 
     try:
         data = json.loads(msg.payload.decode())
-        print("Received message on topic {}: {}".format(msg.topic, data))
+        print("Received message on topic {}: {}".format(msg.topic, data))  if debug else None
         if (msg.topic == topicname2) :
             # Process the message appropriately
             process_piscine_status(data)
     except json.JSONDecodeError as e:
-        print("Error decoding JSON: {}".format(e))
+        print("Error decoding JSON: {}".format(e)) if debug else None
     
     if (msg.topic == topicname) : # cf https://stackoverflow.com/questions/63580034/paho-updating-userdata-from-on-message-callback
         decoded_message =str(msg.payload.decode("utf-8"))
@@ -221,10 +221,11 @@ def handle_mqtt_message(client, userdata, msg):
 
                     
 def process_piscine_status(data):
+    debug = False  # True for debug mode, if you want to see all the messages
     if isinstance(data, dict) and "etatPiscine" in data:
         etat = data['etatPiscine']
         # Assume additional processing here
-        print("Processing Piscine State: {}".format(etat))
+        print("Processing Piscine State: {}".format(etat)) if debug else None
 
 @app.route("/open", methods=['GET', 'POST'])
 def openthedoor():
@@ -235,21 +236,27 @@ def openthedoor():
 
     if user and user.get('etatPiscine', 1) == 1:
         mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 0}))
-        nouvelle_valeur =  { 
-                        "authorize":True,
-                        "date":datetime.today().replace(microsecond=0),
-                        "user":user,
-                    }
-        piscinescollection.update_one({"info.ident": idswp}, {"$push": {"tab_demandes": nouvelle_valeur}})
+        try:
+            nouvelle_valeur =  { 
+                            "authorize":True,
+                            "date":datetime.today().replace(microsecond=0),
+                            "user":user,
+                        }
+            piscinescollection.update_one({"info.ident": idswp}, {"$push": {"tab_demandes": nouvelle_valeur}})
+        except Exception as e:
+            print("Error in open the door")
         return render_template('index.html', idu=idu, idswp=idswp, granted="YES")
     else:
-        mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 2}))
-        nouvelle_valeur =  { 
-                        "authorize":False,
-                        "date":datetime.today().replace(microsecond=0),
-                        "user":user,
-                    }
-        piscinescollection.update_one({"info.ident": idswp}, {"$push": {"tab_demandes": nouvelle_valeur}})
+        mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 0}))
+        try:
+            nouvelle_valeur =  { 
+                            "authorize":True,
+                            "date":datetime.today().replace(microsecond=0),
+                            "user":user,
+                        }
+            piscinescollection.update_one({"info.ident": idswp}, {"$push": {"tab_demandes": nouvelle_valeur}})
+        except Exception as e:
+            print("Error in open the door")
         return render_template('index.html', idu=idu, idswp=idswp, granted="NO")
 
 # Test with => curl -X POST https://waterbnbf.onrender.com/open?who=gillou
