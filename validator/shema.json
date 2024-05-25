@@ -8,7 +8,7 @@
             "properties": {
                 "temperature":{"type":"number"},
                 "light":{"type":"integer"},
-                "regul":{"type":"string", "enum": ["WALK", "HALT"]},
+                "regul":{"type":"string", "enum": ["RUNNING", "HALT"]},
                 "fire":{"type":"boolean"},
                 "heat":{"type":"string", "enum": ["ON", "OFF"]},
                 "cold":{"type":"string", "enum": ["ON", "OFF"]},

@@ -399,7 +399,7 @@ void informationPrint(){
 // permet de transformer un boolean en chaîne
 const char* makeText(int i){
   if(i){
-    return "WALK";
+    return "RUNNING";
   }
   else{
     return "HALT";
