@@ -102,23 +102,7 @@ def hello_world():
 #Test with =>  curl https://waterbnbf.onrender.com/
 
 #-----------------------------------------------------------------------------
-"""
-#https://stackabuse.com/how-to-get-users-ip-address-using-flask/
-@app.route("/ask_for_access", methods=["POST"])
-def get_my_ip():
-    ip_addr = request.remote_addr
-    return jsonify({'ip asking ': ip_addr}), 200
 
-# Test/Compare with  =>curl  https://httpbin.org/ip
-
-#Proxies can make this a little tricky, make sure to check out ProxyFix
-#(Flask docs) if you are using one.
-#Take a look at request.environ in your particular environment :
-@app.route("/ask_for_access", methods=["POST"])
-def client():
-    ip_addr = request.environ['REMOTE_ADDR']
-    return '<h1> Your IP address is:' + ip_addr
-"""
 
 @app.route("/users")
 def lists_users(): # Liste des utilisateurs déclarés
@@ -152,72 +136,76 @@ def handle_connect(client, userdata, flags, rc):
 
 @mqtt_client.on_message()
 def handle_mqtt_message(client, userdata, msg):
-    global topicname
-    global topicname2
-    nbrValueMax = 1000 # max number of values in the tab_requests
-    debug = False  # True for debug mode, if you want to see all the messages
-    nowDate = datetime.today().replace(microsecond=0)
-
-    data = dict(
-        topic=msg.topic,
-        payload=msg.payload.decode()
-    )
-    #    print('Received message on topic: {topic} with payload: {payload}'.format(**data))
-    print("\n msg.topic = {}".format(msg.topic)) if debug else None
-    print("\n topicname = {}".format(topicname)) if debug else None
-    print("\n topicname2 = {}".format(topicname2)) if debug else None
-
     try:
-        data = json.loads(msg.payload.decode())
-        print("Received message on topic {}: {}".format(msg.topic, data))  if debug else None
-        if (msg.topic == topicname2) :
-            # Process the message appropriately
-            process_piscine_status(data)
-    except json.JSONDecodeError as e:
-        print("Error decoding JSON: {}".format(e)) if debug else None
-    
-    if (msg.topic == topicname) : # cf https://stackoverflow.com/questions/63580034/paho-updating-userdata-from-on-message-callback
-        decoded_message =str(msg.payload.decode("utf-8"))
-        print("\x1b[32m"+decoded_message+"\x1b[30m") if debug else None
-        # first step check if the message is a json
-        if(utility.is_json(decoded_message) and decoded_message != "" and decoded_message != "{}"):
-            dic = json.loads(decoded_message) # from string to dict
-            print("\x1b[31m"+decoded_message+"\x1b[30m")  if debug else None
-            # second step check if the json message is valid with use the JSON schema
-            if(utility.validate_json(dic, debug)):
-                print("\n Dictionnary  received = {}".format(dic)) if debug else None
-                ident = dic["info"]["ident"] # Qui a publié ?
-                data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
-                # if the data already exist, we update the tab_requests
-                if(data != None ):
-                    print("data exist !!!") if debug else None
-                    # check if the number of requests is not too, big else pop all the oldest requests
-                    while (len(data["tab_requests"]) > nbrValueMax):
-                        data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
-                        piscinescollection.update_one({"info.ident": ident}, {"$pop": {"tab_requests": -1}})
-                    nouvelle_valeur =  { 
-                        "date":nowDate,
-                        "statuts":dic["status"],
-                        "piscine":dic["piscine"]
-                    }
-                    piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
-                    piscinescollection.update_one({"info.ident": ident}, {"$set": {"info": data["info"], "location": data["location"], "regul": data["regul"], "net": data["net"], "reporthost": data["reporthost"]}})
-                # else we create a new data
-                else:
-                    piscinescollection.insert_one({
-                        "nbr_request": 0,
-                        "info": dic["info"],
-                        "location": dic["location"],  # Directly use the dictionary instead of converting it
-                        "regul": dic["regul"],
-                        "net": dic["net"],
-                        "reporthost": dic["reporthost"],
-                        "tab_requests": [{
-                            "date": nowDate,
-                            "statuts": dic["status"],
-                            "piscine": dic["piscine"] 
-                        }],
-                        "tab_demandes": [],
+        global topicname
+        global topicname2
+        nbrValueMax = 1000 # max number of values in the tab_requests
+        debug = True  # True for debug mode, if you want to see all the messages
+        nowDate = datetime.today().replace(microsecond=0)
+
+        data = dict(
+            topic=msg.topic,
+            payload=msg.payload.decode()
+        )
+        #    print('Received message on topic: {topic} with payload: {payload}'.format(**data))
+        print("\n msg.topic = {}".format(msg.topic)) if debug else None
+        print("\n topicname = {}".format(topicname)) if debug else None
+        print("\n topicname2 = {}".format(topicname2)) if debug else None
+
+        try:
+            data = json.loads(msg.payload.decode())
+            print("Received message on topic {}: {}".format(msg.topic, data))  if debug else None
+            if (msg.topic == topicname2) :
+                # Process the message appropriately
+                process_piscine_status(data)
+        except json.JSONDecodeError as e:
+            print("Error decoding JSON: {}".format(e)) if debug else None
+
+        if (msg.topic == topicname) : # cf https://stackoverflow.com/questions/63580034/paho-updating-userdata-from-on-message-callback
+            decoded_message =str(msg.payload.decode("utf-8"))
+            print("\x1b[32m"+decoded_message+"\x1b[30m") if debug else None
+            # first step check if the message is a json
+            if(utility.is_json(decoded_message) and decoded_message != "" and decoded_message != "{}"):
+                dic = json.loads(decoded_message) # from string to dict
+                print("\x1b[31m"+decoded_message+"\x1b[30m")  if debug else None
+                # second step check if the json message is valid with use the JSON schema
+                if(utility.validate_json(dic, debug)):
+                    print("\n Dictionnary  received = {}".format(dic)) if debug else None
+                    ident = dic["info"]["ident"] # Qui a publié ?
+                    data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
+                    # if the data already exist, we update the tab_requests
+                    if(data != None ):
+                        print("data exist !!!") if debug else None
+                        # check if the number of requests is not too, big else pop all the oldest requests
+                        while (len(data["tab_requests"]) > nbrValueMax):
+                            data = piscinescollection.find_one({"info.ident": ident});# data associé a qui a publié
+                            piscinescollection.update_one({"info.ident": ident}, {"$pop": {"tab_requests": -1}})
+                        nouvelle_valeur =  { 
+                            "date":nowDate,
+                            "statuts":dic["status"],
+                            "piscine":dic["piscine"]
+                        }
+                        piscinescollection.update_one({"info.ident": ident}, {"$push": {"tab_requests": nouvelle_valeur}})
+                        piscinescollection.update_one({"info.ident": ident}, {"$set": {"info": data["info"], "location": data["location"], "regul": data["regul"], "net": data["net"], "reporthost": data["reporthost"]}})
+                    # else we create a new data
+                    else:
+                        piscinescollection.insert_one({
+                            "nbr_request": 0,
+                            "info": dic["info"],
+                            "location": dic["location"],  # Directly use the dictionary instead of converting it
+                            "regul": dic["regul"],
+                            "net": dic["net"],
+                            "reporthost": dic["reporthost"],
+                            "tab_requests": [{
+                                "date": nowDate,
+                                "statuts": dic["status"],
+                                "piscine": dic["piscine"] 
+                            }],
+                            "tab_demandes": [],
                     })
+    except Exception as e:
+        print("Error in handle_mqtt_message")
+        print(e)
 
                     
 def process_piscine_status(data):

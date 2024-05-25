@@ -134,6 +134,17 @@ Note : Vous avez besoin des bibliothèques suivantes sur Node-RED :
 
 L'ESP32 détecte si la valeur des variables lumière et chaleur atteint chacune un seuil haut particulier. Si c'est le cas, une variable représentant un pourcentage est augmentée ; sinon, cette variable est réduite. Si la probabilité de feu dépasse 80%, une alerte est déclenchée. Ce système a l'avantage de pouvoir évoluer au fil du temps.
 
+## Base de donnée mongo
+
+### Présentation de la structuration de la collection piscines
+Nous avons décidé de structurer cette collection avec une liste d'objets représentant les ESP. Cette liste a donc autant d'éléments que d'ESP, à condition qu'elle passe le validateur JSON. Chaque élément contient des champs basiques (objet et type primitif) ainsi que des tableaux permettant, pour tab_requests, d'avoir un historique afin de visualiser, par exemple, l'évolution de la température d'une ESP en fonction du temps. Pour tab_demandes, cela permet d'avoir un historique de chaque demande.
+
+### Présentation de la structuration de la collection users
+Contient une liste des utilisateurs comprenant un nom, un id et un numéro étudiant.
+
+## Protection du serveur et de la base de données
+Pour protéger notre serveur et notre base de données, nous avons utilisé un validateur JSON strict qui n'accepte que les JSON ayant une structure précise. Certains champs de type disposent notamment de valeurs énumérées possibles. De cette manière, nous espérons garantir que le serveur ne plantera pas et que la base de données restera uniforme, évitant ainsi tout problème lors de son utilisation par notre serveur. Nous avons aussi laissé tourné le serveur de nombreuses heures pour tester ca robustesse avec les différentes données que nous et nos camarades envoyé sur le broker.
+
 ## Correctifs par rapport au premier rendu 
 * Ajout d'avantage de commentaires.
 * Esthetique de l'interface Node-red amelioré.
