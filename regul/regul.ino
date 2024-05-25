@@ -39,7 +39,7 @@
 #define USE_SERIAL Serial
 
 // Pour régler les problèmes de compatibilités la passer si besoin de 1 à 0 et inverse
-#define Old 1
+#define Old 0
 
 
 //-------------Structures---------------------    
@@ -330,7 +330,7 @@ void setLedPiscine() {
     } 
     else if (parametre.piscineEtat == 0) { // Accordé - Jaune
       colorA = 255;
-      colorB = 0;
+      colorB = 255;
       colorC = 0;
     }
     else if (parametre.piscineEtat == 2) { // Accès refusé - Rouge
@@ -581,6 +581,8 @@ void setup(){
 
    verifFile();
    delay(2000);
+
+   setLedPiscine();
   
    // Setup routes of the ESP Web server
    setup_http_routes(&server);
