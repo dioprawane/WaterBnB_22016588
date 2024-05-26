@@ -71,6 +71,7 @@ void wifi_connect_multi(String hostname){
   wm.addAP("iPhone_jlqkse","e7znotn89aaxu");
   wm.addAP("NUMERICABLE-D8BA","2MDEMNOKYL");
   wm.addAP("iPhone de Serigne Rawane","nouvelle");
+  wm.addAP("Bbox-FE1070FC","ZTVLD7n92Vhv3VrxbF");
 
   
   WiFi.mode(WIFI_OFF);   

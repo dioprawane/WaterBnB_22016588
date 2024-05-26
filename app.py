@@ -238,9 +238,9 @@ def openthedoor():
         mqtt_client.publish(topicname2, json.dumps({"etatPiscine": 0}))
         try:
             nouvelle_valeur =  { 
-                            "authorize":True,
+                            "authorize":False,
                             "date":datetime.today().replace(microsecond=0),
-                            "user":user,
+                            "user":idu,
                         }
             piscinescollection.update_one({"info.ident": idswp}, {"$push": {"tab_demandes": nouvelle_valeur}})
         except Exception as e:

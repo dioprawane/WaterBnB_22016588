@@ -44,7 +44,7 @@ char* makeJSON(){
   //regul["pourcentageAvantAlerte"] = parametre.pourcentageAvantAlerte;
 
   information["ident"] = parametre.identifiant;
-  information["user"] = "Epsilon";
+  information["user"] = "DIOP&BORREANI";
   information["loc"] = "A Libération-Nice";
 
   net["uptime"] = String(millis());

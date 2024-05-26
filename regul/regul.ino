@@ -39,7 +39,7 @@
 #define USE_SERIAL Serial
 
 // Pour régler les problèmes de compatibilités la passer si besoin de 1 à 0 et inverse
-#define Old 0
+#define Old 1
 
 
 //-------------Structures---------------------    
@@ -107,7 +107,7 @@ struct Parametre{
   char* lat = "43.6979";
   char* lon = "7.2798";
   char* address = "12 Boulevard Joseph Garnier";
-  char* identifiant = "P_21904310";
+  char* identifiant = "P_22016588";
   //--------------Mqtt------------------
   char* mqtt_server = "test.mosquitto.org"; 
   // topic
